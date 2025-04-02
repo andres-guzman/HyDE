@@ -39,6 +39,7 @@ get_hashmap() {
 
     for wallSource in "$@"; do
         [ -z "${wallSource}" ] && continue
+        [ "${wallSource}" == "--no-notify" ] && no_notify=1 && continue
         [ "${wallSource}" == "--skipstrays" ] && skipStrays=1 && continue
         [ "${wallSource}" == "--verbose" ] && verboseMap=1 && continue
 
@@ -58,7 +59,6 @@ get_hashmap() {
 
         find_wallpapers() {
             local wallSource="$1"
-            local debug="${2:-0}" # Optional debug flag
 
             if [ -z "${wallSource}" ]; then
                 print_log -err "ERROR: wallSource is empty"
@@ -81,6 +81,7 @@ get_hashmap() {
 
         if [ -z "${hashMap}" ]; then
             no_wallpapers+=("${wallSource}")
+            print_log -warn "No compatible wallpapers found in: " "${wallSource}"
             continue
         fi
 
@@ -92,7 +93,7 @@ get_hashmap() {
 
     # Notify the list of directories without compatible wallpapers
     if [ "${#no_wallpapers[@]}" -gt 0 ]; then
-        notify-send -a "HyDE Alert" "WARNING: No compatible wallpapers found in: ${no_wallpapers[*]}"
+        [ -n "${no_notify}" ] && notify-send -a "HyDE Alert" "WARNING: No compatible wallpapers found in: ${no_wallpapers[*]}"
     fi
 
     if [ -z "${#wallList[@]}" ] || [[ "${#wallList[@]}" -eq 0 ]]; then
